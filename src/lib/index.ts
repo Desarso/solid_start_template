@@ -1,13 +1,5 @@
 import { action, cache, redirect } from "@solidjs/router";
 import { db } from "./db";
-import {
-  getSession,
-  login,
-  logout as logoutSession,
-  register,
-  validatePassword,
-  validateUsername
-} from "./server";
 import { auth } from "clerk-solidjs/server";
 import { clerkClient } from "@clerk/clerk-sdk-node";
 
@@ -35,3 +27,12 @@ export const getUser = cache(async () => {
     throw redirect("/login");
   }
 }, "user");
+
+export const isLoggedIn = cache(async () => {
+  "use server";
+  const { userId } = auth();
+  if (!userId) {
+    return false;
+  }
+  return redirect("/");
+}, "isLoggedIn");
