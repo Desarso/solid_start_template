@@ -1,0 +1,7 @@
+https://ark-ui.com/react/docs/components/tour
+
+https://flowbite.com/docs/getting-started/solid-js/
+
+already installed on project--> https://www.solid-ui.com/
+
+already installed on project--> https://suid.io/
