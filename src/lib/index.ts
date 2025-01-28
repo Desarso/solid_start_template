@@ -1,7 +1,7 @@
 import { action, cache, redirect } from "@solidjs/router";
 import { db } from "./db";
 import { auth } from "clerk-solidjs/server";
-import { clerkClient, Session } from "@clerk/clerk-sdk-node";
+import { clerkClient, Session } from "@clerk/express";
 
 export const getUser = cache(async () => {
   "use server";
