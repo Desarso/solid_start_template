@@ -1,12 +1,12 @@
 import { action, cache, redirect } from "@solidjs/router";
 import { db } from "./db";
 import { auth } from "clerk-solidjs/server";
-import { clerkClient } from "@clerk/clerk-sdk-node";
+import { clerkClient, Session } from "@clerk/clerk-sdk-node";
 
 export const getUser = cache(async () => {
   "use server";
   try {
-    const { userId } = auth();
+    const { userId, sessionId } = auth();
 
     if (!userId) {
       throw new Error("User not found");
@@ -19,6 +19,7 @@ export const getUser = cache(async () => {
         name: user.firstName,
         email: user.emailAddresses[0].emailAddress,
         imageUrl: user.imageUrl,
+        sessionId: sessionId,
       };
     }
   
