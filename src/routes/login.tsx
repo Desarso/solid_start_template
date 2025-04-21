@@ -3,21 +3,36 @@ import {
   RouteDefinition,
   useSubmission,
   type RouteSectionProps,
+  useNavigate,
 } from "@solidjs/router";
-import { useClerk, useUser } from "clerk-solidjs";
-import { onMount } from "solid-js";
+import { createEffect, onCleanup, onMount } from "solid-js";
 import { Button } from "~/components/ui/button";
-import { isLoggedIn } from "~/lib";
+import { auth } from "~/lib/firebase";
+import { GoogleAuthProvider, signInWithPopup, onAuthStateChanged, User } from "firebase/auth";
 
 export const route = {
-  preload() {
-    isLoggedIn();
-  },
 } satisfies RouteDefinition;
 
 export default function Login(props: RouteSectionProps) {
-  const loggedIn = isLoggedIn();
-  const clerk = useClerk();
+  const navigate = useNavigate();
+
+  createEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        navigate("/", { replace: true });
+      }
+    });
+    onCleanup(() => unsubscribe());
+  });
+
+  const handleGoogleSignIn = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (error) {
+      console.error("Error signing in with Google: ", error);
+    }
+  };
 
   return (
     <main>
@@ -34,14 +49,10 @@ export default function Login(props: RouteSectionProps) {
             <Button
               variant="secondary"
               class="w-full !text-black !border-black"
-              onClick={() =>
-                clerk().openSignIn({
-                  forceRedirectUrl: "/",
-                })
-              }
+              onClick={handleGoogleSignIn}
             >
               <SignInSVG class="mr-2 h-5 w-5" />
-              Sign in
+              Sign in with Google
             </Button>
           </div>
         </div>
@@ -53,19 +64,15 @@ export default function Login(props: RouteSectionProps) {
 function SignInSVG(props: { class: string }) {
   return (
     <svg
-      class={props.class}
-      width="800px"
-      height="800px"
-      viewBox="0 0 24 24"
-      fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      class={props.class}
     >
-      <path
-        fill-rule="evenodd"
-        clip-rule="evenodd"
-        d="M6 8a1 1 0 0 0 1-1V5.923c0-.459.022-.57.082-.684a.364.364 0 0 1 .157-.157c.113-.06.225-.082.684-.082h10.154c.459 0 .57.022.684.082.07.038.12.087.157.157.06.113.082.225.082.684v12.154c0 .459-.022.57-.082.684a.363.363 0 0 1-.157.157c-.113.06-.225.082-.684.082H7.923c-.459 0-.57-.022-.684-.082a.363.363 0 0 1-.157-.157c-.06-.113-.082-.225-.082-.684V17a1 1 0 1 0-2 0v1.077c0 .76.082 1.185.319 1.627.223.419.558.753.977.977.442.237.866.319 1.627.319h10.154c.76 0 1.185-.082 1.627-.319.419-.224.753-.558.977-.977.237-.442.319-.866.319-1.627V5.923c0-.76-.082-1.185-.319-1.627a2.363 2.363 0 0 0-.977-.977C19.262 3.082 18.838 3 18.077 3H7.923c-.76 0-1.185.082-1.627.319a2.363 2.363 0 0 0-.978.977C5.083 4.738 5 5.162 5 5.923V7a1 1 0 0 0 1 1zm9.593 2.943c.584.585.584 1.53 0 2.116L12.71 15.95c-.39.39-1.03.39-1.42 0a.996.996 0 0 1 0-1.41 9.552 9.552 0 0 1 1.689-1.345l.387-.242-.207-.206a10 10 0 0 1-2.24.254H2.998a1 1 0 1 1 0-2h7.921a10 10 0 0 1 2.24.254l.207-.206-.386-.241a9.562 9.562 0 0 1-1.69-1.348.996.996 0 0 1 0-1.41c.39-.39 1.03-.39 1.42 0l2.883 2.893z"
-        fill="#000000"
-      />
+      <path d="M12.0003 4.75C13.7703 4.75 15.3553 5.36002 16.6053 6.54998L19.9403 3.21997C17.9303 1.49 15.2403 0.5 12.0003 0.5C7.10032 0.5 2.96032 3.43 1.31032 7.62L4.89032 10.31C5.70032 7.14002 8.55032 4.75 12.0003 4.75Z" />
+      <path d="M23.75 12C23.75 11.14 23.67 10.3 23.51 9.49001H12V14.26H18.7C18.45 15.84 17.58 17.17 16.26 18.02V20.77H19.94C22.2 18.78 23.75 15.69 23.75 12Z" />
+      <path d="M5.70048 16.09C5.43048 15.28 5.25048 14.42 5.25048 13.5C5.25048 12.58 5.43048 11.72 5.70048 10.91L1.31048 7.62C0.490481 9.24001 0.000480652 11.26 0.000480652 13.5C0.000480652 15.74 0.490481 17.76 1.31048 19.38L5.70048 16.09Z" />
+      <path d="M12.0003 24.5C15.2403 24.5 17.9303 23.51 19.9403 21.78L16.2603 19.03C15.0903 19.82 13.6603 20.25 12.0003 20.25C8.55032 20.25 5.70032 17.86 4.89032 14.69L1.31032 17.38C2.96032 21.57 7.10032 24.5 12.0003 24.5Z" />
     </svg>
   );
 }
